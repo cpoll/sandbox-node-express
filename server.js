@@ -1,8 +1,10 @@
-const express = require('express')
+const express = require('express');
 const StatsD = require("hot-shots");
 
+const args = process.argv.slice(2);
+
 const app = express()
-const port = 3000
+const port = args[0] || 3000;
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
