@@ -36,13 +36,19 @@ app.get('/', (req, res) => {
 // #endregion
 
 // #region StatsD timer
-// Defaults to connecting to DD_AGENT_HOST or localhost:8125 if that value is unset.
-// If you've set up a DataDog Agent locally this should work as-is.
+/*
+
+Defaults to connecting to DD_AGENT_HOST or localhost:8125 if that value is unset.
+If you've set up a DataDog Agent locally this should work as-is.
+
+You can find your metrics in DD under Metrics -> Summary (https://app.datadoghq.com/metric/summary)
+
+*/
 const statsDClient = new StatsD({})
 
 
 function sendStatsdMetrics() {
-  statsDClient.gauge("my-random-number-gauge", Math.floor(Math.random() * 10));
+  statsDClient.gauge("my_random_number_gauge", Math.floor(Math.random() * 10));
 }
 
 setInterval(sendStatsdMetrics, 10000);
