@@ -1,4 +1,6 @@
 const express = require('express')
+const StatsD = require("hot-shots");
+
 const app = express()
 const port = 3000
 
@@ -6,6 +8,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
+// #region TEST PATHS
 // Test methods for locking up node
   app.get("/crash", (req, _res) => {
     console.log(
@@ -30,20 +33,20 @@ app.get('/', (req, res) => {
       a++;
     }
   });
+// #endregion
 
-  // Doesn't work
-  app.get("/eventlock", (req, _res) => {
-    console.log(
-      `Received eventlock request with id ${req.params.id}`
-    );
-    
-    const setNewTimeout = () => { setTimeout(setNewTimeout, 0); }
-    for(let i = 0; i < 30; i++) {
-        setNewTimeout();
-    }
-  });
+// #region StatsD timer
+// Defaults to connecting to DD_AGENT_HOST or localhost:8125 if that value is unset.
+// If you've set up a DataDog Agent locally this should work as-is.
+const statsDClient = new StatsD({})
 
 
+function sendStatsdMetrics() {
+  statsDClient.gauge("my-random-number-gauge", Math.floor(Math.random() * 10));
+}
+
+setInterval(sendStatsdMetrics, 10000);
+// #endregion
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
