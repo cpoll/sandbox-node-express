@@ -1,9 +1,11 @@
 const express = require('express');
 const StatsD = require("hot-shots");
+const cors = require('cors');
 
 const args = process.argv.slice(2);
 
 const app = express()
+const router = express.Router();
 const port = args[0] || 3000;
 
 // #region StatsD timer
@@ -44,48 +46,59 @@ app.use(function (req, res, next) {
 });
 // #endregion
 
+router.use(cors({
+  origin: new RegExp("https://cristian\.test"),
+  methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "HEAD", "PATCH"],
+  allowedHeaders: ["DNT", "X-Formhero-Token", "Keep-Alive", "User-Agent", "X-Requested-With", "If-Modified-Since", "Cache-Control", "Content-Type"],
+  exposedHeaders: ["x-formhero-token"],
+  credentials: true,
+  maxAge: 600,
+}));
 
 // #region Routes
-app.get('/', (req, res) => {
-    new Promise((resolve) => {
-        setTimeout(() => { console.log('the promise finished'); resolve(); }, 10000);
-    });
+router.get('/', (req, res) => {
+    // new Promise((resolve) => {
+    //     setTimeout(() => { console.log('the promise finished'); resolve(); }, 10000);
+    // });
+    console.log("hello world");
     res.send('Hello World!')
 })
 
-app.get('/resource/:org/:team', (req, res) => {
+router.get('/resource/:org/:team', (req, res) => {
   const { org, team } = req.params;
   res.send(`org: ${org}, team: ${team}`);
 })
 
 // #region TEST PATHS
 // Test methods for locking up node
-  app.get("/crash", (req, _res) => {
-    console.log(
-      `Received crash / shutdown request with id ${req.params.id}`
-    );
-    process.exit(66);
-  });
+router.get("/crash", (req, _res) => {
+  console.log(
+    `Received crash / shutdown request with id ${req.params.id}`
+  );
+  process.exit(66);
+});
 
-  app.get("/close", (req, _res) => {
-    console.log(
-      `Received server close request with id ${req.params.id}`
-    );
-    server.close();
-  });
+router.get("/close", (req, _res) => {
+  console.log(
+    `Received server close request with id ${req.params.id}`
+  );
+  server.close();
+});
 
-  app.get("/spinlock", (req, _res) => {
-    console.log(
-      `Received spinlock request with id ${req.params.id}`
-    );
-    let a = 0;
-    while(true) {
-      a++;
-    }
-  });
+router.get("/spinlock", (req, _res) => {
+  console.log(
+    `Received spinlock request with id ${req.params.id}`
+  );
+  let a = 0;
+  while(true) {
+    a++;
+  }
+});
 // #endregion TEST PATHS
 
 // #endregion Routes
+
+app.use('/', router);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
